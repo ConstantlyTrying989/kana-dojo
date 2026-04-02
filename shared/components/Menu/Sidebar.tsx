@@ -256,14 +256,14 @@ const NavLink = memo(
           <ActionButton
             borderBottomThickness={6}
             borderRadius='xl'
-              className={clsx(
-                'flex items-center gap-2',
-                isMain ? 'text-2xl' : 'text-base',
-                'max-lg:justify-center max-lg:px-3 max-lg:py-2 lg:w-full lg:px-4 lg:py-2',
-                isDesktopCollapsed && isMain && 'lg:justify-center lg:px-3',
-                !isMain && 'max-lg:hidden',
-              )}
-            >
+            className={clsx(
+              'flex items-center gap-2 motion-safe:animate-float [--float-distance:-3px]',
+              isMain ? 'text-2xl' : 'text-base',
+              'max-lg:justify-center max-lg:px-3 max-lg:py-2 lg:w-full lg:px-4 lg:py-2',
+              isDesktopCollapsed && isMain && 'lg:justify-center lg:px-3',
+              !isMain && 'max-lg:hidden',
+            )}
+          >
               {renderIcon()}
               <span
                 className={clsx(

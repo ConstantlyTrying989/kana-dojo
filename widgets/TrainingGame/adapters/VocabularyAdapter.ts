@@ -1,4 +1,4 @@
-import type { IVocabObj } from '@/features/Vocabulary/store/useVocabStore';
+import type { IVocabObj } from '@/entities/vocabulary';
 import { shuffle } from '@/shared/lib/shuffle';
 import type { ContentAdapter, GameMode } from './ContentAdapter';
 

@@ -82,7 +82,6 @@ const eslintConfig = [
               message:
                 'widgets/ cannot import from feature data directly. Use facades exported from features/*/index.ts instead.',
             },
-
             // Rule 3: Features CANNOT import from other features' internal directories
             {
               target: './features/!(Kana)/**/*',

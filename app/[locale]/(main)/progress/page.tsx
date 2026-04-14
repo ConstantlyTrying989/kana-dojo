@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ProgressTabs from '@/features/Progress/components/ProgressTabs';
+import { ProgressTabs } from '@/features/Progress';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { BreadcrumbSchema } from '@/shared/components/SEO/BreadcrumbSchema';

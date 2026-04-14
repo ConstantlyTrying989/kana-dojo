@@ -1,4 +1,4 @@
-import KanaGame from '@/features/Kana/components/Game';
+import { KanaGame } from '@/features/Kana';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { CourseSchema } from '@/shared/components/SEO/CourseSchema';

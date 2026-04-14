@@ -1,4 +1,4 @@
-import KanjiMenu from '@/shared/components/Menu/KanjiMenu';
+import { KanjiMenu } from '@/widgets';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { CourseSchema } from '@/shared/components/SEO/CourseSchema';

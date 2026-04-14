@@ -1,4 +1,4 @@
-import KanaMenu from '@/shared/components/Menu/KanaMenu';
+import { KanaMenu } from '@/widgets';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { CourseSchema } from '@/shared/components/SEO/CourseSchema';

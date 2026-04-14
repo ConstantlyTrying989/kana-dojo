@@ -1,4 +1,4 @@
-import type { IKanjiObj } from '@/features/Kanji/store/useKanjiStore';
+import type { IKanjiObj } from '@/entities/kanji';
 import { shuffle } from '@/shared/lib/shuffle';
 import type { ContentAdapter, GameMode } from './ContentAdapter';
 

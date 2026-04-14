@@ -94,8 +94,18 @@ The current architecture is based on three key principles:
 └─────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────┐
+│                  widgets/ (Composition)                 │
+│       Page sections and cross-feature UI assembly       │
+└─────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────┐
 │                  features/ (Modules)                    │
 │    Self-contained and independent functionalities       │
+└─────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────┐
+│                  entities/ (Domain)                     │
+│  Reusable domain models, selectors, and pure helpers    │
 └─────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -118,7 +128,9 @@ The current architecture is based on three key principles:
 ```
 kanadojo/
 ├── app/                    # Next.js App Router
+├── widgets/                # Cross-feature UI composition
 ├── features/               # Feature modules
+├── entities/               # Reusable domain modules
 ├── shared/                 # Shared resources
 ├── core/                   # Fundamental infrastructure
 ├── public/                 # Static assets
@@ -160,9 +172,25 @@ app/
 **Rules:**
 
 - ❌ NO business logic in pages
-- ✅ Pages only orchestrate features and shared components
+- ✅ Pages only orchestrate widgets, features, and shared/core infrastructure
 - ✅ Use Server Components by default, Client Components when needed
-- ✅ Import from `features/` using barrel exports
+- ✅ Import from public module entrypoints
+
+### 🧩 `widgets/` - Cross-Feature Composition
+
+Widgets are larger UI sections that compose public APIs from features, entities, shared modules, and core infrastructure without owning the underlying domain logic.
+
+```
+widgets/
+└── TrainingGame/           # Shared training orchestration widget
+```
+
+**Rules for Widgets:**
+
+1. ✅ Compose public APIs from `features/`, `entities/`, `shared/`, and `core/`
+2. ✅ Own page-section orchestration, not feature state internals
+3. ❌ Do not import feature private folders directly
+4. ❌ Do not become a second `shared/` dumping ground
 
 ### 📦 `features/` - Feature Modules
 
@@ -250,9 +278,26 @@ features/
 
 1. ✅ **Self-containment**: A feature must contain EVERYTHING it needs to function
 2. ✅ **Public API**: Only expose what's necessary through `index.ts`
-3. ✅ **Imports**: Can only import from `shared/`, `core/`, and other features (carefully)
+3. ✅ **Imports**: Can import from `entities/`, `shared/`, `core/`, and other features (carefully)
 4. ❌ **No circular**: Avoid circular dependencies between features
 5. ✅ **Naming**: Use descriptive and clear names for functionality
+
+### 🧠 `entities/` - Reusable Domain Modules
+
+Entities hold reusable domain data, selectors, and pure helpers that are too domain-aware for `shared/` but too low-level for a single feature API.
+
+```
+entities/
+└── kana/
+    └── index.ts
+```
+
+**Rules for Entities:**
+
+1. ✅ Provide stable public entrypoints for reusable domain logic
+2. ✅ Keep entities free of route ownership and feature UI orchestration
+3. ✅ Use entities as the long-term destination for reusable domain types/helpers
+4. ❌ Do not treat entities as a second feature layer
 
 **Example `index.ts` (Barrel Export):**
 
@@ -384,6 +429,8 @@ Configured in `tsconfig.json` for clean imports:
   "compilerOptions": {
     "paths": {
       "@/features/*": ["./features/*"],
+      "@/entities/*": ["./entities/*"],
+      "@/widgets/*": ["./widgets/*"],
       "@/shared/*": ["./shared/*"],
       "@/core/*": ["./core/*"],
       "@/app/*": ["./app/*"]

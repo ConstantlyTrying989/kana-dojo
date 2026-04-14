@@ -1,4 +1,4 @@
-import GauntletKana from '@/features/Kana/components/Gauntlet';
+import { KanaGauntlet } from '@/features/Kana';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { routing } from '@/core/i18n/routing';
@@ -45,7 +45,7 @@ export default function GauntletPage() {
         isAccessibleForFree={true}
         provider={{ name: 'KanaDojo', url: 'https://kanadojo.com' }}
       />
-      <GauntletKana />
+      <KanaGauntlet />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import KanjiGame from '@/features/Kanji/components/Game';
+import { KanjiGame } from '@/features/Kanji';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { CourseSchema } from '@/shared/components/SEO/CourseSchema';

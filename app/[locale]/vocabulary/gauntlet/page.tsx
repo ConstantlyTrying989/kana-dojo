@@ -1,4 +1,4 @@
-import GauntletVocab from '@/features/Vocabulary/components/Gauntlet';
+import { VocabGauntlet } from '@/features/Vocabulary';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { routing } from '@/core/i18n/routing';
@@ -45,7 +45,7 @@ export default function GauntletPage() {
         isAccessibleForFree={true}
         provider={{ name: 'KanaDojo', url: 'https://kanadojo.com' }}
       />
-      <GauntletVocab />
+      <VocabGauntlet />
     </>
   );
 }

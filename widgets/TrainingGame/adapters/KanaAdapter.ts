@@ -1,4 +1,4 @@
-import type { KanaCharacter } from '@/features/Kana/lib/flattenKanaGroup';
+import type { KanaCharacter } from '@/entities/kana';
 import { shuffle } from '@/shared/lib/shuffle';
 import type { ContentAdapter, GameMode } from './ContentAdapter';
 

@@ -1,4 +1,4 @@
-import VocabGame from '@/features/Vocabulary/components/Game';
+import { VocabularyGame } from '@/features/Vocabulary';
 import type { Metadata } from 'next';
 import { generatePageMetadata } from '@/core/i18n/metadata-helpers';
 import { CourseSchema } from '@/shared/components/SEO/CourseSchema';
@@ -40,7 +40,7 @@ export default function Train() {
         skillLevel='Beginner to Advanced'
         learningResourceType='Interactive Vocabulary Training'
       />
-      <VocabGame />
+      <VocabularyGame />
     </>
   );
 }

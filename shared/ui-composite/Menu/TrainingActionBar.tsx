@@ -16,6 +16,8 @@ import { useScrollVisibility } from '@/shared/hooks/generic/useScrollVisibility'
 
 const TRAINING_ACTION_CLASSIC_FLOAT_CLASSES =
   'motion-safe:animate-float [--float-distance:-3px] delay-200ms';
+const ACTIVATION_SCROLL_DELAY_MS = 180;
+const ACTIVATION_SCROLL_DELTA_PX = 6;
 
 interface ITopBarProps {
   currentDojo: string;
@@ -95,6 +97,9 @@ const TrainingActionBar: React.FC<ITopBarProps> = ({
   });
   const isSidebarVisible = useScrollVisibility();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isActivationLocked, setIsActivationLocked] = useState(false);
+  const [canUnlockOnScroll, setCanUnlockOnScroll] = useState(false);
+  const activationScrollYRef = useRef(0);
 
   const placeholderRef = useRef<HTMLDivElement | null>(null);
 
@@ -168,6 +173,51 @@ const TrainingActionBar: React.FC<ITopBarProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!isFilled) {
+      setIsActivationLocked(false);
+      setCanUnlockOnScroll(false);
+      return;
+    }
+
+    setIsActivationLocked(true);
+    setCanUnlockOnScroll(false);
+    const timeoutId = window.setTimeout(() => {
+      setCanUnlockOnScroll(true);
+    }, ACTIVATION_SCROLL_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isFilled]);
+
+  useEffect(() => {
+    if (!isFilled || !isActivationLocked) return;
+
+    const scrollContainer = document.querySelector<HTMLElement>(
+      '[data-scroll-restoration-id="container"]',
+    );
+    if (!scrollContainer) return;
+
+    activationScrollYRef.current = scrollContainer.scrollTop;
+
+    const handleScroll = () => {
+      const currentScrollY = scrollContainer.scrollTop;
+      const delta = Math.abs(currentScrollY - activationScrollYRef.current);
+      activationScrollYRef.current = currentScrollY;
+
+      if (!canUnlockOnScroll) return;
+      if (delta < ACTIVATION_SCROLL_DELTA_PX) return;
+
+      setIsActivationLocked(false);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [canUnlockOnScroll, isActivationLocked, isFilled]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 1023px)');
     const updateViewport = () => setIsMobileViewport(mediaQuery.matches);
 
@@ -179,8 +229,7 @@ const TrainingActionBar: React.FC<ITopBarProps> = ({
     };
   }, []);
 
-  const targetBottom =
-    isMobileViewport && !isSidebarVisible ? 0 : layout.bottom;
+  const targetBottom = isMobileViewport && !isSidebarVisible ? 0 : layout.bottom;
 
   return (
     <>

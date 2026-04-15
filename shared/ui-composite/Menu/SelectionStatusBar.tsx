@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useKanjiSelection } from '@/features/Kanji';
 import { useVocabSelection } from '@/features/Vocabulary';
@@ -15,6 +15,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/utils/utils';
 
 type ContentType = 'kana' | 'kanji' | 'vocabulary';
+const ACTIVATION_SCROLL_DELAY_MS = 180;
+const ACTIVATION_SCROLL_DELTA_PX = 6;
 
 const SelectionStatusBar = () => {
   const { playClick } = useClick();
@@ -83,6 +85,54 @@ const SelectionStatusBar = () => {
     width: '100%',
   });
   const isVisible = useScrollVisibility();
+  const [isActivationLocked, setIsActivationLocked] = useState(false);
+  const [canUnlockOnScroll, setCanUnlockOnScroll] = useState(false);
+  const activationScrollYRef = useRef(0);
+
+  useEffect(() => {
+    if (!hasSelection) {
+      setIsActivationLocked(false);
+      setCanUnlockOnScroll(false);
+      return;
+    }
+
+    setIsActivationLocked(true);
+    setCanUnlockOnScroll(false);
+    const timeoutId = window.setTimeout(() => {
+      setCanUnlockOnScroll(true);
+    }, ACTIVATION_SCROLL_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [hasSelection]);
+
+  useEffect(() => {
+    if (!hasSelection || !isActivationLocked) return;
+
+    const scrollContainer = document.querySelector<HTMLElement>(
+      '[data-scroll-restoration-id="container"]',
+    );
+    if (!scrollContainer) return;
+
+    activationScrollYRef.current = scrollContainer.scrollTop;
+
+    const handleScroll = () => {
+      const currentScrollY = scrollContainer.scrollTop;
+      const delta = Math.abs(currentScrollY - activationScrollYRef.current);
+      activationScrollYRef.current = currentScrollY;
+
+      if (!canUnlockOnScroll) return;
+      if (delta < ACTIVATION_SCROLL_DELTA_PX) return;
+
+      setIsActivationLocked(false);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [canUnlockOnScroll, hasSelection, isActivationLocked]);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -141,8 +191,8 @@ const SelectionStatusBar = () => {
         <motion.div
           initial={{ y: '-100%', opacity: 0 }}
           animate={{
-            y: isVisible ? 0 : '-100%',
-            opacity: isVisible ? 1 : 0,
+            y: isActivationLocked || isVisible ? 0 : '-100%',
+            opacity: isActivationLocked || isVisible ? 1 : 0,
           }}
           exit={{ y: '-100%', opacity: 0 }}
           transition={{

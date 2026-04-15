@@ -1,11 +1,11 @@
 'use client';
 
-import Info from '@/shared/components/Menu/Info';
-import TrainingActionBar from '@/shared/components/Menu/TrainingActionBar';
-import SelectionStatusBar from '@/shared/components/Menu/SelectionStatusBar';
-import { ActionButton } from '@/shared/components/ui/ActionButton';
+import Info from '@/shared/ui-composite/Menu/Info';
+import TrainingActionBar from '@/shared/ui-composite/Menu/TrainingActionBar';
+import SelectionStatusBar from '@/shared/ui-composite/Menu/SelectionStatusBar';
+import { ActionButton } from '@/shared/ui/components/ActionButton';
 import { MousePointer } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils/utils';
 import { useClick } from '@/shared/hooks/generic/useAudio';
 import { KanaCards, useKanaContent, useKanaSelection } from '@/features/Kana';
 
@@ -51,3 +51,4 @@ const KanaMenu = ({ filter = 'all' }: { filter?: KanaMenuFilter }) => {
 };
 
 export default KanaMenu;
+

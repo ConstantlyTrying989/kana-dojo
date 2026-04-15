@@ -323,43 +323,67 @@ export * from './lib/utils';
 export type { KanaCharacter, KanaGroup } from './data/kana';
 ```
 
-### 🔗 `shared/` - Shared Resources
+### 🔗 `shared/` - Foundation Layer
 
-Reusable code across multiple features. Only truly shared code should be placed here.
+`shared/` is a strict foundational layer for cross-feature building blocks that are not domain-specific.
 
 ```
 shared/
-├── components/             # Reusable components
-│   ├── Game/               # Generic game component
-│   ├── Modals/             # Modals (Welcome, Info, etc.)
-│   ├── AudioButton.tsx     # Audio button
-│   ├── AchievementBadge.tsx
-│   ├── Link.tsx            # Link wrapper
-│   └── ui/                 # shadcn/ui components
-│
-├── hooks/                  # Shared custom hooks
-│   ├── useAudio.ts         # Audio hook
-│   ├── useKeyboard.ts      # Keyboard shortcuts
-│   └── useLocalStorage.ts  # Persistence
-│
-├── lib/                    # Shared utilities
-│   ├── utils.ts            # General functions
-│   ├── cn.ts               # Tailwind merge
-│   └── unitSets.ts         # JLPT unit sets
-│
-├── store/                  # Shared stores
-│   └── useOnboardingStore.ts  # Onboarding state
-│
-└── types/                  # Global TypeScript types
-    └── index.ts
+├── config/                 # App-wide configuration exports (e.g. constants)
+├── infra/                  # Technical adapters and integrations
+│   ├── client/             # Client-facing infra helpers (cache adapters)
+│   └── server/             # Server-side infra (redis, rate-limit, fs-backed loaders)
+├── ui/                     # Primitive UI components and low-level controls
+├── ui-composite/           # Generic composite UI blocks (non-domain, cross-feature)
+├── utils/                  # Pure cross-feature helpers (framework-agnostic where possible)
+├── hooks/                  # Generic reusable hooks
+├── store/                  # Global non-domain stores
+└── types/                  # Technical cross-domain contracts only
 ```
+
+**Ownership matrix:**
+
+| Layer | Owns | Must not own |
+| --- | --- | --- |
+| `shared/` | primitives, technical infra, generic hooks/utils | domain models, page orchestration, feature-specific workflows |
+| `entities/` | domain models, domain selectors, reusable domain types | route ownership, page sections, app wiring |
+| `features/` | business workflows, feature state, feature UI | cross-feature page composition, unrelated domain reuse buckets |
+| `widgets/` | cross-feature page-section composition | feature internals, domain source of truth |
 
 **Rules for Shared:**
 
-1. ✅ **Multiple usage**: Only place code used by 2+ features
-2. ✅ **No feature dependencies**: Don't import from `features/`
-3. ✅ **Generic**: Not specific to one functionality
-4. ❌ **Not a dumping ground**: Not for "homeless code"
+1. ✅ Use role-based organization (`infra`, `ui`, `utils`, `config`) instead of feature-style grouping.
+2. ✅ Keep imports flowing inward: shared should not depend on feature internals or widget composition.
+3. ✅ Prefer public entrypoints (`@/shared/infra/...`, `@/shared/config/...`, `@/shared/ui`, `@/shared/utils`) over deep legacy paths.
+4. ❌ Do not store domain types in `shared/types` when they belong in `entities`.
+5. ❌ Do not add page-level or route-level orchestration to `shared`.
+
+**Single-PR migration safety checkpoints:**
+
+1. Contracts first: define target ownership and boundary rules before moving files.
+2. Scaffolding second: create target entrypoints before rewiring imports.
+3. Moves before cleanup: complete physical file moves first, then rewrite imports.
+4. Cleanup last: remove legacy paths only after zero remaining usages.
+
+**Shared component triage guide:**
+
+| Current area | Target home | Rationale |
+| --- | --- | --- |
+| `shared/components/ui/*` | `shared/ui/components/*` | Primitive UI surface for all layers |
+| `shared/components/Menu/*` | `widgets/menu/*` | Page-section orchestration across features |
+| `shared/components/*` (non-primitive reusable) | `shared/ui-composite/*` | Generic composite UI blocks |
+| workflow-specific composite blocks | `widgets/*` or `features/*` | Keep shared free from feature/page orchestration |
+
+**Shared utility segmentation guide:**
+
+| Legacy path | Preferred entrypoint |
+| --- | --- |
+| `shared/lib/rateLimit` | `shared/infra/server/rateLimit` |
+| `shared/lib/redis` | `shared/infra/server/redis` |
+| `shared/lib/server/*` | `shared/infra/server/*` |
+| `shared/lib/apiCache` | `shared/infra/client/apiCache` |
+| `shared/lib/constants` | `shared/config/constants` |
+| `shared/lib/*` (pure helpers) | `shared/utils/*` |
 
 ### 🧱 `core/` - Fundamental Infrastructure
 
@@ -444,7 +468,7 @@ Configured in `tsconfig.json` for clean imports:
 ```typescript
 // ✅ With path alias
 import { useKanaStore } from '@/features/kana';
-import { AudioButton } from '@/shared/components';
+import { AudioButton } from '@/shared/ui-composite/audio/AudioButton';
 import { getTranslations } from '@/core/i18n';
 
 // ❌ Without path alias (relative)
@@ -624,32 +648,35 @@ export default function NewFeaturePage() {
 }
 ```
 
-### Adding a Shared Component
+### Adding Shared UI
 
 1. **Determine if truly shared:**
    - Is it used by 2+ features?
    - Is it generic and not feature-specific?
 
-2. **Create in `shared/components/`:**
+2. **Choose target layer and create in one of:**
+   - `shared/ui/components/*` for primitives
+   - `shared/ui-composite/*` for generic composites
+   - `widgets/*` if it orchestrates feature APIs
 
 ```typescript
-// shared/components/NewComponent.tsx
+// shared/ui-composite/NewComponent.tsx
 export const NewComponent = () => {
   // ...
 };
 ```
 
-3. **Export in barrel:**
+3. **Export in a public entrypoint:**
 
 ```typescript
-// shared/components/index.ts
+// shared/ui-composite/index.ts
 export { NewComponent } from './NewComponent';
 ```
 
 4. **Use:**
 
 ```typescript
-import { NewComponent } from '@/shared/components';
+import { NewComponent } from '@/shared/ui-composite';
 ```
 
 ### Adding a New Translation
@@ -744,7 +771,7 @@ The migration of KanaDojo from an unstructured codebase to a feature-based archi
 | `components/Dojo/Kanji/`     | `features/kanji/components/`                   | Components     |
 | `components/Dojo/Vocab/`     | `features/vocabulary/components/`              | Components     |
 | `components/Settings/`       | `features/themes/components/Settings/`         | Components     |
-| `components/reusable/`       | `shared/components/`                           | Components     |
+| `components/reusable/`       | `shared/ui-composite/`                         | Components     |
 | `store/useKanaKanjiStore.ts` | `features/kana/store/useKanaStore.ts`          | Store          |
 | `store/useKanaKanjiStore.ts` | `features/kanji/store/useKanjiStore.ts`        | Store          |
 | `store/useVocabStore.ts`     | `features/vocabulary/store/useVocabStore.ts`   | Store          |
@@ -754,7 +781,7 @@ The migration of KanaDojo from an unstructured codebase to a feature-based archi
 | `static/themes.ts`           | `features/themes/data/themes.ts`               | Data           |
 | `static/fonts.ts`            | `features/themes/data/fonts.ts`                | Data           |
 | `lib/hooks/`                 | `shared/hooks/`                                | Hooks          |
-| `lib/utils.ts`               | `shared/lib/utils.ts`                          | Utils          |
+| `lib/utils.ts`               | `shared/utils/utils.ts`                        | Utils          |
 | `lib/useOnboardingStore.ts`  | `shared/store/useOnboardingStore.ts`           | Store          |
 | `i18n/`                      | `core/i18n/`                                   | Infrastructure |
 | `translations/`              | `core/i18n/locales/`                           | Translations   |

@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import Info from '@/shared/components/Menu/Info';
-import TrainingActionBar from '@/shared/components/Menu/TrainingActionBar';
-import UnitSelector from '@/shared/components/Menu/UnitSelector';
+import Info from '@/shared/ui-composite/Menu/Info';
+import TrainingActionBar from '@/shared/ui-composite/Menu/TrainingActionBar';
+import UnitSelector from '@/shared/ui-composite/Menu/UnitSelector';
 import { VocabCards, useVocabSelection } from '@/features/Vocabulary';
 import { vocabDataService } from '@/features/Vocabulary/services/vocabDataService';
 
@@ -50,3 +50,4 @@ const VocabMenu = ({
 };
 
 export default VocabMenu;
+
